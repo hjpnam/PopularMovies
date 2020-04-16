@@ -33,11 +33,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     private RecyclerView mMovieListRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private MovieAdapter mMovieAdapter;
+    private SortOrder mSortOrder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mSortOrder = SortOrder.POPULAR;
         buildRecyclerView();
    }
 
@@ -47,14 +49,18 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         inflater.inflate(R.menu.menu_movie_list, menu);
         return true;
     }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem menuItem) {
+    @Override public boolean onOptionsItemSelected(MenuItem menuItem) {
         int id = menuItem.getItemId();
 
         switch (id) {
-            case R.id.menuItem_sort_by:
-                // TODO (1) Handle sort_by menu item
+            case R.id.main_menu_popular:
+                mSortOrder = SortOrder.POPULAR;
+                fetchMovies();
+                return true;
+
+            case R.id.main_menu_rate:
+                mSortOrder = SortOrder.TOP_RATED;
+                fetchMovies();
                 return true;
 
             default:
@@ -70,10 +76,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         startActivity(intentToStartMovieDetailActivity);
     }
 
-    private void fetchMovies(SortOrder sortOrder) {
+    private void fetchMovies() {
         ExecutorService service = Executors.newSingleThreadExecutor();
 
-        Future<String> movieJsonFuture = service.submit(new FetchMovieTask(sortOrder));
+        Future<String> movieJsonFuture = service.submit(new FetchMovieTask());
 
         try {
             String fetchResult = movieJsonFuture.get(2, TimeUnit.SECONDS);
@@ -101,15 +107,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
         mMovieListRecyclerView.setAdapter(mMovieAdapter);
 
-        fetchMovies(SortOrder.POPULAR);
+        fetchMovies();
     }
 
     class FetchMovieTask implements Callable<String> {
-        SortOrder mSortOrder;
-
-        FetchMovieTask(SortOrder sortOrder) {
-            mSortOrder = sortOrder;
-        }
 
         @Override
         public String call() throws IOException {
@@ -117,8 +118,5 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
             return NetworkUtils.getResponseFromHttpUrl(fetchMovieListUrl, 3000);
         }
 
-        public void setSortOrder(SortOrder sortOrder) {
-            mSortOrder = sortOrder;
-        }
     }
 }
