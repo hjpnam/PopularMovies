@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -37,17 +38,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        mMovieListRecyclerView = (RecyclerView) findViewById(R.id.rv_movie_list);
-        mMovieListRecyclerView.setHasFixedSize(true);
-        mMovieListRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-
-        mMovieAdapter = new MovieAdapter(this);
-
-        mMovieListRecyclerView.setAdapter(mMovieAdapter);
-
-        fetchMovies(SortOrder.POPULAR);
-    }
+        buildRecyclerView();
+   }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -72,7 +64,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
     @Override
     public void onClick(Movie movie) {
-        Class destinationClass = MovieDetailActivity.class;
+        Intent intentToStartMovieDetailActivity = new Intent(this, MovieDetailActivity.class);
+        intentToStartMovieDetailActivity.putExtra("Selected movie", movie);
+
+        startActivity(intentToStartMovieDetailActivity);
     }
 
     private void fetchMovies(SortOrder sortOrder) {
@@ -97,12 +92,22 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         }
     }
 
+    private void buildRecyclerView() {
+        mMovieListRecyclerView = (RecyclerView) findViewById(R.id.rv_movie_list);
+        mMovieListRecyclerView.setHasFixedSize(true);
+        mMovieListRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
 
+        mMovieAdapter = new MovieAdapter(this);
+
+        mMovieListRecyclerView.setAdapter(mMovieAdapter);
+
+        fetchMovies(SortOrder.POPULAR);
+    }
 
     class FetchMovieTask implements Callable<String> {
         SortOrder mSortOrder;
 
-        public FetchMovieTask(SortOrder sortOrder) {
+        FetchMovieTask(SortOrder sortOrder) {
             mSortOrder = sortOrder;
         }
 

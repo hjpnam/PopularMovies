@@ -1,23 +1,18 @@
 package com.example.popularmovies.shared;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class Movie {
+public class Movie implements Parcelable {
     private String mTitle;
     private String mPosterPath;
     private String mOverview;
     private float mRating;
-    private Date mReleaseDate;
-
-    public Movie(String title, String posterPath, String overView, float rating, Date releaseDate) {
-        mTitle = title;
-        mPosterPath = posterPath;
-        mOverview = overView;
-        mRating = rating;
-        mReleaseDate = releaseDate;
-    }
+    private long mReleaseDate;
 
     public Movie(String title, String posterPath, String overView, float rating, String releaseDate) throws ParseException {
         mTitle = title;
@@ -28,7 +23,7 @@ public class Movie {
         // Convert date string into Date object
         String datePattern = "yyyy-MM-dd";
         SimpleDateFormat format = new SimpleDateFormat(datePattern);
-        mReleaseDate = format.parse(releaseDate);
+        mReleaseDate = format.parse(releaseDate).getTime();
     }
 
     public Movie(String title, String posterPath, String overView, String rating, String releaseDate) throws ParseException {
@@ -40,8 +35,28 @@ public class Movie {
         // Convert date string into Date object
         String datePattern = "yyyy-MM-dd";
         SimpleDateFormat format = new SimpleDateFormat(datePattern);
-        mReleaseDate = format.parse(releaseDate);
+        mReleaseDate = format.parse(releaseDate).getTime();
     }
+
+    protected Movie(Parcel in) {
+        mTitle = in.readString();
+        mPosterPath = in.readString();
+        mOverview = in.readString();
+        mRating = in.readFloat();
+        mReleaseDate = in.readLong();
+    }
+
+    public static final Creator<Movie> CREATOR = new Creator<Movie>() {
+        @Override
+        public Movie createFromParcel(Parcel in) {
+            return new Movie(in);
+        }
+
+        @Override
+        public Movie[] newArray(int size) {
+            return new Movie[size];
+        }
+    };
 
     public String getTitle() {
         return mTitle;
@@ -59,7 +74,21 @@ public class Movie {
         return mRating;
     }
 
-    public Date getReleaseDate() {
+    public long getReleaseDate() {
         return mReleaseDate;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mTitle);
+        dest.writeString(mPosterPath);
+        dest.writeString(mOverview);
+        dest.writeFloat(mRating);
+        dest.writeLong(mReleaseDate);
     }
 }
