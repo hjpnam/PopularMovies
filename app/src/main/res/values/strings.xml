@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">PopularMovies</string>
+    <string name="menuItem_sort_by">Sort By</string>
+    <string name="image_content_description_poster">Film Poster</string>
 </resources>
