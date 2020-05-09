@@ -8,4 +8,7 @@
         android:title="@string/menuItem_sort_by_rate"
         android:id="@+id/main_menu_rate"
         app:showAsAction="withText"/>
+    <item
+        android:title="@string/menuItem_sort_by_favorite"
+        android:id="@+id/main_menu_favorite" />
 </menu>

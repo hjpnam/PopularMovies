@@ -4,6 +4,8 @@ package com.example.popularmovies.utilities;
 import android.net.Uri;
 import android.util.Log;
 
+import androidx.core.widget.ListViewAutoScrollHelper;
+
 import com.example.popularmovies.BuildConfig;
 import com.example.popularmovies.shared.PosterSize;
 import com.example.popularmovies.shared.SortOrder;
@@ -77,6 +79,31 @@ public class NetworkUtils {
         return url;
     }
 
+    public static URL buildDetailApiUrl(String pageQuery, String subPath, String movieId) {
+        Uri.Builder builder = new Uri.Builder();
+        builder.scheme("https")
+                .authority(TMDB_API_URL)
+                .appendPath(AUTH_VERSION_PATH)
+                .appendPath(SUB_MOVIE_PATH)
+                .appendPath(movieId)
+                .appendPath(subPath)
+                .appendQueryParameter(API_KEY_PARAM, BuildConfig.TMDB_API_KEY)
+                .appendQueryParameter(LANGUAGE_PARAM, LANGUAGE)
+                .appendQueryParameter(PAGE_PARAM, pageQuery);
+        Uri builtUri = builder.build();
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        Log.v(TAG, "Built detail API URL " + url);
+
+        return url;
+    }
+
     public static URL buildPosterUrl(String posterId, PosterSize posterSize) {
         String posterSizePath = null;
         switch (posterSize) {
@@ -145,7 +172,6 @@ public class NetworkUtils {
 
                     reader.close();
                     return sb.toString();
-
             }
 
         } catch (MalformedURLException e) {

@@ -5,7 +5,6 @@ import android.os.Parcelable;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class Movie implements Parcelable {
     private String mTitle;
@@ -13,12 +12,14 @@ public class Movie implements Parcelable {
     private String mOverview;
     private float mRating;
     private long mReleaseDate;
+    private String mId;
 
-    public Movie(String title, String posterPath, String overView, float rating, String releaseDate) throws ParseException {
+    public Movie(String title, String posterPath, String overView, float rating, String releaseDate, String id) throws ParseException {
         mTitle = title;
         mPosterPath = posterPath;
         mOverview = overView;
         mRating = rating;
+        mId = id;
 
         // Convert date string into Date object
         String datePattern = "yyyy-MM-dd";
@@ -26,11 +27,12 @@ public class Movie implements Parcelable {
         mReleaseDate = format.parse(releaseDate).getTime();
     }
 
-    public Movie(String title, String posterPath, String overView, String rating, String releaseDate) throws ParseException {
+    public Movie(String title, String posterPath, String overView, String rating, String releaseDate, String id) throws ParseException {
         mTitle = title;
         mPosterPath = posterPath;
         mOverview = overView;
         mRating = Float.parseFloat(rating);
+        mId = id;
 
         // Convert date string into Date object
         String datePattern = "yyyy-MM-dd";
@@ -44,6 +46,7 @@ public class Movie implements Parcelable {
         mOverview = in.readString();
         mRating = in.readFloat();
         mReleaseDate = in.readLong();
+        mId = in.readString();
     }
 
     public static final Creator<Movie> CREATOR = new Creator<Movie>() {
@@ -78,6 +81,10 @@ public class Movie implements Parcelable {
         return mReleaseDate;
     }
 
+    public String getId() {
+        return mId;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -90,5 +97,6 @@ public class Movie implements Parcelable {
         dest.writeString(mOverview);
         dest.writeFloat(mRating);
         dest.writeLong(mReleaseDate);
+        dest.writeString(mId);
     }
 }

@@ -2,5 +2,8 @@
     <string name="app_name">PopularMovies</string>
     <string name="menuItem_sort_by_popular">Popular</string>
     <string name="menuItem_sort_by_rate">Highest rated</string>
+    <string name="menuItem_sort_by_favorite">Favorite</string>
     <string name="image_content_description_poster">Film Poster</string>
+    <string name="section_trailer">Trailers</string>
+    <string name="section_review">Reviews</string>
 </resources>

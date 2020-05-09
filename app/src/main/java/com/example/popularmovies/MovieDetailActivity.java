@@ -7,27 +7,67 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.popularmovies.shared.Movie;
 import com.example.popularmovies.shared.PosterSize;
+import com.example.popularmovies.shared.Review;
+import com.example.popularmovies.shared.Trailer;
 import com.example.popularmovies.utilities.NetworkUtils;
+import com.example.popularmovies.viewmodels.ReviewViewModel;
+import com.example.popularmovies.viewmodels.ReviewViewModelFactory;
 import com.squareup.picasso.Picasso;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 public class MovieDetailActivity extends AppCompatActivity {
-
+    private ReviewAdapter mReviewAdapter;
+    private TrailerAdapter mTrailerAdapter;
+    private ReviewViewModel reviewViewModel;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+        Movie selectedMovie = getMovieFromIntent();
 
+        populateDetailsViews(selectedMovie);
+
+        buildRecyclerView();
+
+        setViewModel(selectedMovie);
+    }
+
+    private void setViewModel(Movie selectedMovie) {
+        reviewViewModel = new ViewModelProvider(this,
+                new ReviewViewModelFactory(this.getApplication(), selectedMovie.getId()))
+                .get(ReviewViewModel.class);
+        reviewViewModel.getReviews().observe(this, new Observer<List<Review>>() {
+            @Override
+            public void onChanged(List<Review> reviews) {
+                mReviewAdapter.setReviews(reviews);
+            }
+        });
+        reviewViewModel.getTrailers().observe(this, new Observer<List<Trailer>>() {
+            @Override
+            public void onChanged(List<Trailer> trailers) {
+                mTrailerAdapter.setTrailers(trailers);
+            }
+        });
+    }
+
+    private Movie getMovieFromIntent() {
         Intent intent = getIntent();
-        Movie selectedMovie = intent.getParcelableExtra("Selected movie");
+        return intent.getParcelableExtra("Selected movie");
+    }
 
+    private void populateDetailsViews(Movie selectedMovie) {
         String title = selectedMovie.getTitle();
         String posterPath = NetworkUtils.buildPosterUrl(selectedMovie.getPosterPath(), PosterSize.W342).toString();
         String overview = selectedMovie.getOverview();
@@ -48,7 +88,25 @@ public class MovieDetailActivity extends AppCompatActivity {
         titleTextView.setText(title);
         Picasso.get().load(posterPath).into(posterImageView);
         releaseDateTextView.setText(df.format(releaseDate));
-        ratingTextView.setText(String.valueOf(rating));
+        ratingTextView.setText(String.valueOf(rating) + " / 10");
         overviewTextView.setText(overview);
+    }
+
+    private void buildRecyclerView() {
+        RecyclerView reviewRv = (RecyclerView) findViewById(R.id.rv_review_list);
+        reviewRv.setHasFixedSize(true);
+        reviewRv.setNestedScrollingEnabled(true);
+        reviewRv.setLayoutManager(new LinearLayoutManager(this));
+
+        mReviewAdapter = new ReviewAdapter();
+        reviewRv.setAdapter(mReviewAdapter);
+
+        RecyclerView trailerRv = (RecyclerView) findViewById(R.id.rv_trailer_list);
+        trailerRv.setHasFixedSize(true);
+        trailerRv.setNestedScrollingEnabled(true);
+        trailerRv.setLayoutManager(new LinearLayoutManager(this));
+
+        mTrailerAdapter = new TrailerAdapter();
+        trailerRv.setAdapter(mTrailerAdapter);
     }
 }

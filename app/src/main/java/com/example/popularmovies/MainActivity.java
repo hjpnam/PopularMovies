@@ -1,47 +1,48 @@
 package com.example.popularmovies;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.popularmovies.shared.Movie;
 import com.example.popularmovies.shared.SortOrder;
-import com.example.popularmovies.utilities.JsonUtils;
-import com.example.popularmovies.utilities.NetworkUtils;
+import com.example.popularmovies.viewmodels.MovieViewModel;
+import com.example.popularmovies.viewmodels.MovieViewModelFactory;
 
-import org.json.JSONException;
-
-import java.io.IOException;
-import java.net.URL;
-import java.text.ParseException;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+
 
 public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterOnClickHandler {
-    private RecyclerView mMovieListRecyclerView;
-    private RecyclerView.LayoutManager mLayoutManager;
     private MovieAdapter mMovieAdapter;
-    private SortOrder mSortOrder;
+    private MovieViewModel mMovieViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mSortOrder = SortOrder.POPULAR;
         buildRecyclerView();
-   }
+        setViewModel(SortOrder.POPULAR);
+    }
+
+    private void setViewModel(SortOrder sortOrder) {
+        mMovieViewModel = new ViewModelProvider(this,
+                new MovieViewModelFactory(this.getApplication(), "1", sortOrder))
+                .get(MovieViewModel.class);
+        mMovieViewModel.getMovies().observe(this, new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(List<Movie> movies) {
+                mMovieAdapter.setMovies(movies);
+            }
+        });
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -54,15 +55,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
         switch (id) {
             case R.id.main_menu_popular:
-                mSortOrder = SortOrder.POPULAR;
-                fetchMovies();
+                setViewModel(SortOrder.POPULAR);
                 return true;
-
             case R.id.main_menu_rate:
-                mSortOrder = SortOrder.TOP_RATED;
-                fetchMovies();
+                setViewModel(SortOrder.TOP_RATED);
                 return true;
-
+            case R.id.main_menu_favorite:
+                return true;
             default:
                 return super.onOptionsItemSelected(menuItem);
         }
@@ -76,30 +75,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         startActivity(intentToStartMovieDetailActivity);
     }
 
-    private void fetchMovies() {
-        ExecutorService service = Executors.newSingleThreadExecutor();
-
-        Future<String> movieJsonFuture = service.submit(new FetchMovieTask());
-
-        try {
-            String fetchResult = movieJsonFuture.get(2, TimeUnit.SECONDS);
-            List<Movie> movieList = JsonUtils.parseTmdbJson(fetchResult);
-            mMovieAdapter.setMovies(movieList);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
     private void buildRecyclerView() {
-        mMovieListRecyclerView = (RecyclerView) findViewById(R.id.rv_movie_list);
+        RecyclerView mMovieListRecyclerView = (RecyclerView) findViewById(R.id.rv_movie_list);
         mMovieListRecyclerView.setHasFixedSize(true);
         mMovieListRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
 
@@ -107,16 +84,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
         mMovieListRecyclerView.setAdapter(mMovieAdapter);
 
-        fetchMovies();
     }
 
-    class FetchMovieTask implements Callable<String> {
-
-        @Override
-        public String call() throws IOException {
-            URL fetchMovieListUrl = NetworkUtils.buildApiUrl("1", mSortOrder);
-            return NetworkUtils.getResponseFromHttpUrl(fetchMovieListUrl, 3000);
-        }
-
-    }
 }

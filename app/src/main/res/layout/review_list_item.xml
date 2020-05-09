@@ -1,16 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="13dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/tv_review_content" />
+        android:id="@+id/tv_review_author"
+        android:textSize="18sp"
+        android:layout_marginBottom="4dp"/>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/tv_review_author" />
+        android:id="@+id/tv_review_content"
+        android:lineSpacingExtra="2dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_marginTop="7dp"
+        android:background="@android:color/darker_gray" />
 
 </LinearLayout>
