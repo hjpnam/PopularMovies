@@ -13,16 +13,31 @@ import com.example.popularmovies.shared.SortOrder;
 import java.util.List;
 
 public class MovieViewModel extends AndroidViewModel {
-    MovieRepository repository;
-    private LiveData<List<Movie>> mMovies;
+    private MovieRepository repository;
+    private LiveData<List<Movie>> mPopularMovies;
+    private LiveData<List<Movie>> mRatedMovies;
+    private LiveData<List<Movie>> mFavMovies;
 
-    public MovieViewModel(@NonNull Application application, String pageQuery, SortOrder sortOrder) {
+    public MovieViewModel(@NonNull Application application) {
         super(application);
-        repository = MovieRepository.getInstance();
-        mMovies = repository.fetchMovies(pageQuery, sortOrder);
+        repository = MovieRepository.getInstance(application);
+        mPopularMovies = repository.fetchMovies("1", SortOrder.POPULAR);
+        mRatedMovies = repository.fetchMovies("1", SortOrder.TOP_RATED);
+        mFavMovies = repository.fetchFavoriteMovies();
     }
 
-    public LiveData<List<Movie>> getMovies() {
-        return mMovies;
+    public LiveData<List<Movie>> getPopularMovies() {
+        return mPopularMovies;
     }
+
+    public LiveData<List<Movie>> getRatedMovies() {
+        return mRatedMovies;
+    }
+
+    public LiveData<List<Movie>> getFavMovies() {
+        return mFavMovies;
+    }
+
+
+
 }

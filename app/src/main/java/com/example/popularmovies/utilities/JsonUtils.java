@@ -43,7 +43,7 @@ public class JsonUtils {
             String overview = movieJSON.getString(TMDB_OVERVIEW);
             float rating = (float) movieJSON.getDouble(TMDB_VOTE_AVG);
             String releaseDate = movieJSON.getString(TMDB_RELEASE_DATE);
-            String id = movieJSON.getString(TMDB_ID);
+            int id = movieJSON.getInt(TMDB_ID);
 
             Movie movie = new Movie(title, posterPath, overview, rating, releaseDate, id);
 

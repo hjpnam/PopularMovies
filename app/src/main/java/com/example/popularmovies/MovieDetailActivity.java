@@ -2,6 +2,8 @@ package com.example.popularmovies;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -29,37 +31,68 @@ import java.util.List;
 public class MovieDetailActivity extends AppCompatActivity {
     private ReviewAdapter mReviewAdapter;
     private TrailerAdapter mTrailerAdapter;
-    private ReviewViewModel reviewViewModel;
+    private Movie mMovie;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
-        Movie selectedMovie = getMovieFromIntent();
+        mMovie = getMovieFromIntent();
 
-        populateDetailsViews(selectedMovie);
+        populateDetailsViews(mMovie);
 
         buildRecyclerView();
 
-        setViewModel(selectedMovie);
+        setViewModel(mMovie);
+
     }
 
-    private void setViewModel(Movie selectedMovie) {
-        reviewViewModel = new ViewModelProvider(this,
+    private void setViewModel(final Movie selectedMovie) {
+
+        final ReviewViewModel reviewViewModel = new ViewModelProvider(this,
                 new ReviewViewModelFactory(this.getApplication(), selectedMovie.getId()))
                 .get(ReviewViewModel.class);
+
         reviewViewModel.getReviews().observe(this, new Observer<List<Review>>() {
             @Override
             public void onChanged(List<Review> reviews) {
                 mReviewAdapter.setReviews(reviews);
             }
         });
+
         reviewViewModel.getTrailers().observe(this, new Observer<List<Trailer>>() {
             @Override
             public void onChanged(List<Trailer> trailers) {
                 mTrailerAdapter.setTrailers(trailers);
             }
         });
+
+        final Button favoriteBtn = (Button) findViewById(R.id.btn_add_favorite);
+
+        reviewViewModel.getFavoriteMovie().observe(this, new Observer<Movie>() {
+            @Override
+            public void onChanged(final Movie movie) {
+                if (movie == null) {
+                    favoriteBtn.setText(R.string.button_favorite_text);
+                    favoriteBtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            reviewViewModel.insertFavoriteMovie(selectedMovie);
+                        }
+                    });
+                } else {
+                    favoriteBtn.setText(R.string.button_unfavorite_text);
+                    favoriteBtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            reviewViewModel.deleteFavoriteMovie(movie);
+                        }
+                    });
+                }
+            }
+        });
+
+
     }
 
     private Movie getMovieFromIntent() {
@@ -88,7 +121,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         titleTextView.setText(title);
         Picasso.get().load(posterPath).into(posterImageView);
         releaseDateTextView.setText(df.format(releaseDate));
-        ratingTextView.setText(String.valueOf(rating) + " / 10");
+        ratingTextView.setText(String.format("%s / 10", String.valueOf(rating)));
         overviewTextView.setText(overview);
     }
 

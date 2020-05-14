@@ -58,6 +58,12 @@
             android:textSize="18sp"
             tools:text="@tools:sample/lorem" />
 
+        <Button
+            android:id="@+id/btn_add_favorite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/button_favorite_text" />
+
     </LinearLayout>
 
     <TextView

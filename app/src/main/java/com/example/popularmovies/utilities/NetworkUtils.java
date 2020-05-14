@@ -4,7 +4,6 @@ package com.example.popularmovies.utilities;
 import android.net.Uri;
 import android.util.Log;
 
-import androidx.core.widget.ListViewAutoScrollHelper;
 
 import com.example.popularmovies.BuildConfig;
 import com.example.popularmovies.shared.PosterSize;
@@ -79,13 +78,13 @@ public class NetworkUtils {
         return url;
     }
 
-    public static URL buildDetailApiUrl(String pageQuery, String subPath, String movieId) {
+    public static URL buildDetailApiUrl(String pageQuery, String subPath, int movieId) {
         Uri.Builder builder = new Uri.Builder();
         builder.scheme("https")
                 .authority(TMDB_API_URL)
                 .appendPath(AUTH_VERSION_PATH)
                 .appendPath(SUB_MOVIE_PATH)
-                .appendPath(movieId)
+                .appendPath(String.valueOf(movieId))
                 .appendPath(subPath)
                 .appendQueryParameter(API_KEY_PARAM, BuildConfig.TMDB_API_KEY)
                 .appendQueryParameter(LANGUAGE_PARAM, LANGUAGE)
@@ -113,9 +112,6 @@ public class NetworkUtils {
             case W154:
                 posterSizePath = "w154";
                 break;
-            case W185:
-                posterSizePath = "w185";
-                break;
             case W342:
                 posterSizePath = "w342";
                 break;
@@ -125,6 +121,7 @@ public class NetworkUtils {
             case W780:
                 posterSizePath = "w780";
                 break;
+            case W185:
             default:
                 posterSizePath = "w185";
         }
@@ -146,15 +143,13 @@ public class NetworkUtils {
         return url;
     }
 
-    public static String getResponseFromHttpUrl(URL url, int timeout) throws IOException {
+    public static String getResponseFromHttpUrl(URL url) {
         HttpURLConnection urlConnection = null;
         try {
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
             urlConnection.setUseCaches(false);
             urlConnection.setAllowUserInteraction(false);
-            urlConnection.setConnectTimeout(timeout);
-            urlConnection.setReadTimeout(timeout);
             urlConnection.connect();
             int status = urlConnection.getResponseCode();
 

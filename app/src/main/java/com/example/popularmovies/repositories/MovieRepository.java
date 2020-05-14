@@ -1,8 +1,12 @@
 package com.example.popularmovies.repositories;
 
+import android.content.Context;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.popularmovies.shared.FavoriteMovieDao;
+import com.example.popularmovies.shared.FavoriteMovieDatabase;
 import com.example.popularmovies.shared.Movie;
 import com.example.popularmovies.shared.SortOrder;
 import com.example.popularmovies.utilities.JsonUtils;
@@ -19,14 +23,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+
 public class MovieRepository {
     private static MovieRepository movieRepository;
+    private static FavoriteMovieDao favoriteMovieDao;
     private static int numCores = Runtime.getRuntime().availableProcessors();
     private static ExecutorService executor = Executors.newFixedThreadPool(numCores + 1);
 
-    public static MovieRepository getInstance() {
+    public static MovieRepository getInstance(Context context) {
         if (movieRepository == null) {
             movieRepository = new MovieRepository();
+            FavoriteMovieDatabase db = FavoriteMovieDatabase.getInstance(context);
+            favoriteMovieDao = db.favoriteMovieDao();
         }
         return movieRepository;
     }
@@ -64,6 +72,12 @@ public class MovieRepository {
         return data;
     }
 
+    public LiveData<List<Movie>> fetchFavoriteMovies() {
+        return favoriteMovieDao.getAllFavMovies();
+    }
+
+
+
     class FetchMoviesTask implements Callable<String> {
         String pageQuery;
         SortOrder sortOrder;
@@ -76,7 +90,11 @@ public class MovieRepository {
         @Override
         public String call() throws Exception {
             URL fetchMovieListUrl = NetworkUtils.buildApiUrl(pageQuery, sortOrder);
-            return NetworkUtils.getResponseFromHttpUrl(fetchMovieListUrl, 3000);
+            return NetworkUtils.getResponseFromHttpUrl(fetchMovieListUrl);
         }
     }
+
+
+
+
 }

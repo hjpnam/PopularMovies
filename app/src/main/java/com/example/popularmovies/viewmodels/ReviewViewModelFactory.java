@@ -8,9 +8,9 @@ import androidx.lifecycle.ViewModelProvider;
 
 public class ReviewViewModelFactory implements ViewModelProvider.Factory {
     private Application mApp;
-    private String mMovieId;
+    private int mMovieId;
 
-    public ReviewViewModelFactory(Application app, String movieId) {
+    public ReviewViewModelFactory(Application app, int movieId) {
         mApp = app;
         mMovieId = movieId;
     }

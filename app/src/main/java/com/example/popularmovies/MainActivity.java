@@ -7,6 +7,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -15,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.popularmovies.shared.Movie;
 import com.example.popularmovies.shared.SortOrder;
 import com.example.popularmovies.viewmodels.MovieViewModel;
-import com.example.popularmovies.viewmodels.MovieViewModelFactory;
 
 import java.util.List;
 
@@ -29,14 +29,29 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         buildRecyclerView();
-        setViewModel(SortOrder.POPULAR);
+        setViewModel();
+        setObserver(SortOrder.POPULAR);
     }
 
-    private void setViewModel(SortOrder sortOrder) {
-        mMovieViewModel = new ViewModelProvider(this,
-                new MovieViewModelFactory(this.getApplication(), "1", sortOrder))
-                .get(MovieViewModel.class);
-        mMovieViewModel.getMovies().observe(this, new Observer<List<Movie>>() {
+    private void setViewModel() {
+        mMovieViewModel = new ViewModelProvider(this).get(MovieViewModel.class);
+    }
+
+    private void setObserver(SortOrder sortOrder) {
+        LiveData<List<Movie>> moviesLiveData;
+        switch (sortOrder) {
+            case TOP_RATED:
+                moviesLiveData = mMovieViewModel.getRatedMovies();
+                break;
+            case FAVORITE:
+                moviesLiveData = mMovieViewModel.getFavMovies();
+                break;
+            case POPULAR:
+            default:
+                moviesLiveData = mMovieViewModel.getPopularMovies();
+        }
+
+        moviesLiveData.observe(this, new Observer<List<Movie>>() {
             @Override
             public void onChanged(List<Movie> movies) {
                 mMovieAdapter.setMovies(movies);
@@ -52,15 +67,17 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     }
     @Override public boolean onOptionsItemSelected(MenuItem menuItem) {
         int id = menuItem.getItemId();
+        mMovieViewModel.getPopularMovies().removeObservers(this);
 
         switch (id) {
             case R.id.main_menu_popular:
-                setViewModel(SortOrder.POPULAR);
+                setObserver(SortOrder.POPULAR);
                 return true;
             case R.id.main_menu_rate:
-                setViewModel(SortOrder.TOP_RATED);
+                setObserver(SortOrder.TOP_RATED);
                 return true;
             case R.id.main_menu_favorite:
+                setObserver(SortOrder.FAVORITE);
                 return true;
             default:
                 return super.onOptionsItemSelected(menuItem);
