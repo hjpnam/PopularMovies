@@ -1,6 +1,7 @@
 package com.example.popularmovies.viewmodels;
 
 import android.app.Application;
+import android.view.LayoutInflater;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -13,31 +14,28 @@ import com.example.popularmovies.shared.SortOrder;
 import java.util.List;
 
 public class MovieViewModel extends AndroidViewModel {
-    private MovieRepository repository;
-    private LiveData<List<Movie>> mPopularMovies;
+    MovieRepository repository;
+    private LiveData<List<Movie>> mFavoriteMovies;
     private LiveData<List<Movie>> mRatedMovies;
-    private LiveData<List<Movie>> mFavMovies;
+    private LiveData<List<Movie>> mPopularMovies;
 
     public MovieViewModel(@NonNull Application application) {
         super(application);
         repository = MovieRepository.getInstance(application);
+        mFavoriteMovies = repository.fetchFavoriteMovies();
         mPopularMovies = repository.fetchMovies("1", SortOrder.POPULAR);
         mRatedMovies = repository.fetchMovies("1", SortOrder.TOP_RATED);
-        mFavMovies = repository.fetchFavoriteMovies();
     }
 
-    public LiveData<List<Movie>> getPopularMovies() {
-        return mPopularMovies;
+    public LiveData<List<Movie>> getMovies(SortOrder sortOrder) {
+        switch (sortOrder) {
+            case TOP_RATED:
+                return mRatedMovies;
+            case FAVORITE:
+                return mFavoriteMovies;
+            case POPULAR:
+            default:
+                return mPopularMovies;
+        }
     }
-
-    public LiveData<List<Movie>> getRatedMovies() {
-        return mRatedMovies;
-    }
-
-    public LiveData<List<Movie>> getFavMovies() {
-        return mFavMovies;
-    }
-
-
-
 }

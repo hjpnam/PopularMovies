@@ -73,7 +73,7 @@ public class NetworkUtils {
             e.printStackTrace();
         }
 
-        Log.v(TAG, "Built API URL " + url);
+        Log.d(TAG, "Built API URL " + url);
 
         return url;
     }
@@ -98,7 +98,7 @@ public class NetworkUtils {
             e.printStackTrace();
         }
 
-        Log.v(TAG, "Built detail API URL " + url);
+        Log.d(TAG, "Built detail API URL " + url);
 
         return url;
     }
@@ -138,7 +138,7 @@ public class NetworkUtils {
             e.printStackTrace();
         }
 
-        Log.v(TAG, "Built Poster URL " + url);
+        Log.d(TAG, "Built Poster URL " + url);
 
         return url;
     }

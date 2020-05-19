@@ -1,6 +1,6 @@
 package com.example.popularmovies.repositories;
 
-import android.content.Context;
+import android.app.Application;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -30,10 +30,10 @@ public class MovieRepository {
     private static int numCores = Runtime.getRuntime().availableProcessors();
     private static ExecutorService executor = Executors.newFixedThreadPool(numCores + 1);
 
-    public static MovieRepository getInstance(Context context) {
+    public static MovieRepository getInstance(Application application) {
         if (movieRepository == null) {
             movieRepository = new MovieRepository();
-            FavoriteMovieDatabase db = FavoriteMovieDatabase.getInstance(context);
+            FavoriteMovieDatabase db = FavoriteMovieDatabase.getInstance(application);
             favoriteMovieDao = db.favoriteMovieDao();
         }
         return movieRepository;

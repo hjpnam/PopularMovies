@@ -5,6 +5,7 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.example.popularmovies.repositories.ReviewRepository;
 import com.example.popularmovies.shared.Movie;
@@ -16,7 +17,7 @@ import java.util.List;
 public class ReviewViewModel extends AndroidViewModel {
     private LiveData<List<Review>> mReviews;
     private LiveData<List<Trailer>> mTrailers;
-    private LiveData<Movie> mFavoriteMovie;
+    private MutableLiveData<Boolean> isFavorite;
     private ReviewRepository repository;
 
     public ReviewViewModel(@NonNull Application application, int movieId) {
@@ -24,7 +25,13 @@ public class ReviewViewModel extends AndroidViewModel {
         repository = ReviewRepository.getInstance(application);
         mReviews = repository.fetchReviews(movieId);
         mTrailers = repository.fetchTrailers(movieId);
-        mFavoriteMovie = repository.fetchFavoriteMovie(movieId);
+        Movie favoriteMovie = repository.fetchFavoriteMovie(movieId);
+        isFavorite = new MutableLiveData<>();
+        if (favoriteMovie == null) {
+            isFavorite.setValue(false);
+        } else {
+            isFavorite.setValue(true);
+        }
     }
 
     public LiveData<List<Review>> getReviews() {
@@ -33,7 +40,6 @@ public class ReviewViewModel extends AndroidViewModel {
 
     public LiveData<List<Trailer>> getTrailers() { return mTrailers; }
 
-    public LiveData<Movie> getFavoriteMovie() { return mFavoriteMovie; }
 
     public void insertFavoriteMovie(Movie movie) {
         repository.insertFavoriteMovie(movie);
@@ -41,5 +47,13 @@ public class ReviewViewModel extends AndroidViewModel {
 
     public void deleteFavoriteMovie(Movie movie) {
         repository.deleteFavoriteMovie(movie);
+    }
+
+    public LiveData<Boolean> checkIsFavorite() {
+        return isFavorite;
+    }
+
+    public void setFavorite(boolean bool) {
+        isFavorite.setValue(bool);
     }
 }

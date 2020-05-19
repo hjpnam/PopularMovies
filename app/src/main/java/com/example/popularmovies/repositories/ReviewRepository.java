@@ -1,6 +1,6 @@
 package com.example.popularmovies.repositories;
 
-import android.content.Context;
+import android.app.Application;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
@@ -32,10 +32,10 @@ public class  ReviewRepository {
     private static int numCores = Runtime.getRuntime().availableProcessors();
     private ExecutorService executor = Executors.newFixedThreadPool(numCores + 1);
 
-    public static ReviewRepository getInstance(Context context) {
+    public static ReviewRepository getInstance(Application application) {
         if (reviewRepository == null) {
             reviewRepository = new ReviewRepository();
-            FavoriteMovieDatabase db = FavoriteMovieDatabase.getInstance(context);
+            FavoriteMovieDatabase db = FavoriteMovieDatabase.getInstance(application);
             favoriteMovieDao = db.favoriteMovieDao();
         }
         return reviewRepository;
@@ -45,7 +45,24 @@ public class  ReviewRepository {
 
     public LiveData<List<Review>> fetchReviews(final int movieId) {
         final MutableLiveData<List<Review>> data = new MutableLiveData<>();
+        Future<String> reviewJsonFuture = executor.submit(new FetchReviewsTask(movieId));
 
+        String fetchResult = null;
+        try {
+            fetchResult = reviewJsonFuture.get();
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        List<Review> reviewList = null;
+        try {
+            reviewList = JsonUtils.parseReviewJson(fetchResult);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.d(TAG, "reviews fetched");
+        data.postValue(reviewList);
+        /*
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -68,7 +85,7 @@ public class  ReviewRepository {
                 data.postValue(reviewList);
             }
         });
-
+        */
         return data;
     }
 
@@ -101,25 +118,21 @@ public class  ReviewRepository {
         return data;
     }
 
-    public LiveData<Movie> fetchFavoriteMovie(final int movieId) {
-        final MutableLiveData<Movie> data = new MutableLiveData<>();
+    public Movie fetchFavoriteMovie(final int movieId) {
+        Movie movie = null;
 
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                Future<Movie> future = executor.submit(new FetchFavMovieTask(favoriteMovieDao, movieId));
+        Future<Movie> future = executor.submit(new FetchFavMovieTask(favoriteMovieDao, movieId));
 
-                try {
-                    data.postValue(future.get());
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        try {
+            movie = future.get();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
-        return data;
+        return movie;
+
     }
 
     public void insertFavoriteMovie(Movie movie) {

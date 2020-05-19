@@ -2,6 +2,7 @@ package com.example.popularmovies;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -9,6 +10,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -29,12 +31,14 @@ import java.util.Date;
 import java.util.List;
 
 public class MovieDetailActivity extends AppCompatActivity {
+    private static final String TAG = "MOVIE_DETAIL_ACTIVITY";
     private ReviewAdapter mReviewAdapter;
     private TrailerAdapter mTrailerAdapter;
     private Movie mMovie;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate: activity created");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
         mMovie = getMovieFromIntent();
@@ -48,14 +52,14 @@ public class MovieDetailActivity extends AppCompatActivity {
     }
 
     private void setViewModel(final Movie selectedMovie) {
-
         final ReviewViewModel reviewViewModel = new ViewModelProvider(this,
                 new ReviewViewModelFactory(this.getApplication(), selectedMovie.getId()))
                 .get(ReviewViewModel.class);
-
+        Log.d(TAG, "setViewModel: ");
         reviewViewModel.getReviews().observe(this, new Observer<List<Review>>() {
             @Override
             public void onChanged(List<Review> reviews) {
+                Log.d(TAG, "onChanged: setting reviews");
                 mReviewAdapter.setReviews(reviews);
             }
         });
@@ -69,15 +73,16 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         final Button favoriteBtn = (Button) findViewById(R.id.btn_add_favorite);
 
-        reviewViewModel.getFavoriteMovie().observe(this, new Observer<Movie>() {
+        reviewViewModel.checkIsFavorite().observe(this, new Observer<Boolean>() {
             @Override
-            public void onChanged(final Movie movie) {
-                if (movie == null) {
+            public void onChanged(final Boolean isFavorite) {
+                if (!isFavorite) {
                     favoriteBtn.setText(R.string.button_favorite_text);
                     favoriteBtn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             reviewViewModel.insertFavoriteMovie(selectedMovie);
+                            reviewViewModel.setFavorite(true);
                         }
                     });
                 } else {
@@ -85,7 +90,8 @@ public class MovieDetailActivity extends AppCompatActivity {
                     favoriteBtn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            reviewViewModel.deleteFavoriteMovie(movie);
+                            reviewViewModel.deleteFavoriteMovie(mMovie);
+                            reviewViewModel.setFavorite(false);
                         }
                     });
                 }
